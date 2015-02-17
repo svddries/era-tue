@@ -1,26 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include "libfreenect.h"
-
-#include <pthread.h>
-#include <math.h>
-
+#include <libfreenect.h>
 #include <iostream>
-
 #include <opencv2/highgui/highgui.hpp>
-
-pthread_t freenect_thread;
-volatile int die = 0;
-
-uint8_t *rgb_back;
 
 freenect_context *f_ctx;
 freenect_device *f_dev;
-
-int rgb_seq = 0;
-int depth_seq = 0;
 
 // ----------------------------------------------------------------------------------------------------
 
@@ -44,8 +27,6 @@ void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
             ++i;
         }
     }
-
-    depth_seq++;
 
     cv::imshow("depth", depth_image / 8);
     cv::waitKey(3);
@@ -71,8 +52,6 @@ void rgb_cb(freenect_device *dev, void *rgb, uint32_t timestamp)
 
     cv::imshow("rgb", rgb_image);
     cv::waitKey(3);
-
-    rgb_seq++;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -80,11 +59,10 @@ void rgb_cb(freenect_device *dev, void *rgb, uint32_t timestamp)
 int main(int argc, char **argv)
 {
 
-    printf("Kinect camera test\n");
-
+    std::cout << "Kinect camera test" << std::endl;
 
     if (freenect_init(&f_ctx, NULL) < 0) {
-        printf("freenect_init() failed\n");
+        std::cout << "freenect_init() failed" << std::endl;
         return 1;
     }
 
@@ -92,7 +70,7 @@ int main(int argc, char **argv)
     freenect_select_subdevices(f_ctx, (freenect_device_flags)(FREENECT_DEVICE_CAMERA));
 
     int nr_devices = freenect_num_devices (f_ctx);
-    printf ("Number of devices found: %d\n", nr_devices);
+    std::cout << "Number of devices found: " << nr_devices << std::endl;
 
     int user_device_number = 0;
     if (argc > 1)
@@ -103,33 +81,32 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    if (freenect_open_device(f_ctx, &f_dev, user_device_number) < 0) {
-        printf("Could not open device\n");
+    if (freenect_open_device(f_ctx, &f_dev, user_device_number) < 0)
+    {
+        std::cout << "Could not open device" << std::endl;
         freenect_shutdown(f_ctx);
         return 1;
     }
-
-    // -----
 
     freenect_set_depth_callback(f_dev, depth_cb);
     freenect_set_video_callback(f_dev, rgb_cb);
     freenect_set_video_mode(f_dev, freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_VIDEO_RGB));
     freenect_set_depth_mode(f_dev, freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_DEPTH_REGISTERED));
-    freenect_set_video_buffer(f_dev, rgb_back);
 
     freenect_start_depth(f_dev);
     freenect_start_video(f_dev);
 
-    while (!die)
+    while (true)
     {
         int res = freenect_process_events(f_ctx);
         if (res < 0 && res != -10)
         {
-            printf("\nError %d received from libusb - aborting.\n",res);
+            std::cout << "\nError " << res << " received from libusb - aborting." << std::endl;
             break;
         }
     }
-    printf("\nshutting down streams...\n");
+
+    std::cout << "shutting down streams..." << std::endl;
 
     freenect_stop_depth(f_dev);
     freenect_stop_video(f_dev);
@@ -137,9 +114,7 @@ int main(int argc, char **argv)
     freenect_close_device(f_dev);
     freenect_shutdown(f_ctx);
 
-    printf("-- done!\n");
-
-    // -----
+    std::cout << "done!" << std::endl;
 
     return 0;
 }
