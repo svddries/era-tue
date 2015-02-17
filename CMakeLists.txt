@@ -10,17 +10,16 @@ include_directories(
 
 # ----------------------------------------------------------------------------------------------------
 
-find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
+find_package(OpenCV REQUIRED)
 set(freenect_LIBRARIES /usr/lib/libfreenect.so)
 
 include_directories(
-    ${OPENGL_INCLUDE_DIRS}
-    ${GLUT_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
 )
 
+message( "OpenCV libraries: ${OpenCV_LIBRARIES}" )
 
 add_executable(test_kinect
     test/kinect.cpp
 )
-target_link_libraries(test_kinect ${era_LIBRARIES} ${freenect_LIBRARIES} ${OpenGL_LIBRARIES} ${GLUT_LIBRARIES})
+target_link_libraries(test_kinect ${era_LIBRARIES} ${freenect_LIBRARIES} ${OpenCV_LIBRARIES})
