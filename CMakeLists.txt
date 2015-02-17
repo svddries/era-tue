@@ -17,9 +17,14 @@ include_directories(
     ${OpenCV_INCLUDE_DIRS}
 )
 
-message( "OpenCV libraries: ${OpenCV_LIBRARIES}" )
+add_library(era_tue_kinect
+	src/components/kinect.cpp
+)
+target_link_libraries(era_tue_kinect ${era_LIBRARIES} ${freenect_LIBRARIES} ${OpenCV_LIBRARIES})
+
+# ----------------------------------------------------------------------------------------------------
 
 add_executable(test_kinect
-    test/kinect.cpp
+    test/test_kinect.cpp
 )
-target_link_libraries(test_kinect ${era_LIBRARIES} ${freenect_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(test_kinect era_tue_kinect ${era_LIBRARIES})
