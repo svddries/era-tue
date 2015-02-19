@@ -1,5 +1,6 @@
 #include <era-tue/configuration/writer.h>
 #include <era-tue/configuration/reader.h>
+#include <era-tue/configuration/parser.h>
 
 #include <iostream>
 
@@ -18,6 +19,14 @@ void showValue(configuration::Reader& r, const std::string& key)
 
 int main(int argc, char **argv)
 {
+    if (argc > 1)
+    {
+        configuration::Data data;
+        configuration::Parser p(data);
+        p.readFile(argv[1]);
+        return 0;
+    }
+
     configuration::Data data;
     configuration::Writer w(data);
 
