@@ -24,7 +24,6 @@ int main(int argc, char **argv)
     w.writeGroup("test");
     w.setValue("a", 5);
     w.setValue("b", 123);
-    w.endGroup();
 
     w.writeArray("array");
 
@@ -38,21 +37,28 @@ int main(int argc, char **argv)
 
     w.endArray();
 
+    w.endGroup();
+
     // - - - - - - -
 
     configuration::Reader r(data);
 
-    if (!r.readArray("array"))
-        std::cout << "Unknown array" << std::endl;
-
-    while(r.nextArrayItem())
-    {
-        showValue(r, "a");
-    }
-    r.endArray();
-
     if (!r.readGroup("test"))
         std::cout << "Unknown group" << std::endl;
+
+    if (r.readArray("array"))
+    {
+        while(r.nextArrayItem())
+        {
+            showValue(r, "a");
+            showValue(r, "b");
+        }
+        r.endArray();
+    }
+    else
+    {
+        std::cout << "Unknown array" << std::endl;
+    }
 
     showValue(r, "b");
 
