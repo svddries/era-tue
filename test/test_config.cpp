@@ -27,7 +27,7 @@ int main(int argc, char **argv)
         configuration::Parser p(data);
         p.readFile(argv[1]);
 
-        configuration::emit(data, std::cout, configuration::JSON);
+        configuration::emit(data, std::cout, configuration::EMIT_JSON);
 
         return 0;
     }
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 
     std::cout << "----------" << std::endl;
 
-    configuration::emit(data, std::cout, configuration::JSON);
+    configuration::emit(data, std::cout, configuration::EMIT_JSON | configuration::EMIT_MINIMAL);
 
     std::cout << "----------" << std::endl;
 

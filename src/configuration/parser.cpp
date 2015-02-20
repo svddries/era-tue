@@ -4,6 +4,8 @@
 #include <iostream>
 #include <stdlib.h>
 
+// @TODO parse arrays
+
 namespace configuration
 {
 
@@ -87,7 +89,7 @@ bool Parser::readStream(std::istream& in)
         if (c == '#')
             state = READ_COMMENT;
 
-        if (state == READ_COMMENT)
+        if (state == READ_COMMENT && c != '\n')
             continue;
 
         State new_state = state;

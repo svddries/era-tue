@@ -12,7 +12,14 @@ enum EmitType
     JSON
 };
 
-void emit(const Data& data, std::ostream& out, EmitType type = YAML);
+enum EmitOptions {
+  EMIT_MINIMAL = 0x01,
+  EMIT_QUOTED_KEYS = 0x02,
+  EMIT_YAML = 0x04,
+  EMIT_JSON = 0x08
+};
+
+void emit(const Data& data, std::ostream& out, int options = 0);
 
 } // end namespace configuration
 
