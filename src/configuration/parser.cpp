@@ -66,12 +66,11 @@ bool Parser::readFile(const std::string& filename)
     if (!in.is_open())
         return false;
 
-    readStream(in);
-
-    std::string w;
-    in >> w;
+    bool success = readStream(in);
 
     in.close();
+
+    return success;
 }
 
 // ----------------------------------------------------------------------------------------------------

@@ -1,0 +1,5 @@
+sensor:
+    width: 640
+    height: 480
+    fx: 558
+    fy: 558

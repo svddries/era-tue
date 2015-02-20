@@ -24,6 +24,17 @@ add_library(era_tue_config
 
 # ----------------------------------------------------------------------------------------------------
 
+add_library(era_tue_geometry
+    include/era-tue/geometry/math.h
+    include/era-tue/geometry/mesh.h
+    include/era-tue/geometry/rasterizer.h
+    src/geometry/rasterizer.cpp
+    include/era-tue/geometry/primitives.h
+    src/geometry/primitives.cpp
+)
+
+# ----------------------------------------------------------------------------------------------------
+
 find_package(OpenCV REQUIRED)
 set(freenect_LIBRARIES /usr/lib/libfreenect.so)
 
@@ -37,6 +48,17 @@ add_library(era_tue_kinect
 target_link_libraries(era_tue_kinect ${era_LIBRARIES} ${freenect_LIBRARIES} ${OpenCV_LIBRARIES})
 
 # ----------------------------------------------------------------------------------------------------
+#     APPLICATIONS
+# ----------------------------------------------------------------------------------------------------
+
+add_executable(wm
+    src/applications/wm/main.cpp
+    src/applications/wm/localizer.h
+    src/applications/wm/localizer.cpp
+)
+target_link_libraries(wm era_tue_kinect era_tue_config era_tue_geometry ${era_LIBRARIES})
+
+# ----------------------------------------------------------------------------------------------------
 #     TESTS
 # ----------------------------------------------------------------------------------------------------
 
@@ -45,4 +67,7 @@ target_link_libraries(test_kinect era_tue_kinect ${era_LIBRARIES})
 
 add_executable(test_config test/test_config.cpp)
 target_link_libraries(test_config era_tue_config ${era_LIBRARIES})
+
+add_executable(test_rasterizer test/test_rasterizer.cpp)
+target_link_libraries(test_rasterizer era_tue_geometry ${OpenCV_LIBRARIES})
 
