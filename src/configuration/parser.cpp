@@ -61,6 +61,7 @@ bool Parser::readStream(std::istream& in)
     bool read_quoted = false;
 
     std::string word;
+    bool word_quoted = false;
     std::string key;
 
     State state = READ_KEY;
@@ -107,6 +108,8 @@ bool Parser::readStream(std::istream& in)
         {
         case '"':
             read_quoted = !read_quoted;
+            if (read_quoted)
+                word_quoted = true;
             break;
         case '\n':
             new_state = READ_NEWLINE_WHITESPACE;
@@ -175,19 +178,24 @@ bool Parser::readStream(std::istream& in)
             }
             else if (state == READ_VALUE)
             {
-                // Try to parse to integer
-                char* pEnd;
-                int i = strtol(word.c_str(), &pEnd, 10);
-                if (pEnd[0] == 0)
-                    writer_.setValue(key, i);
+                if (word_quoted)
+                    writer_.setValue(key, word); // string
                 else
                 {
-                    // Try to parse to double
-                    double d = strtod(word.c_str(), &pEnd);
+                    // Try to parse to integer
+                    char* pEnd;
+                    int i = strtol(word.c_str(), &pEnd, 10);
                     if (pEnd[0] == 0)
-                        writer_.setValue(key, d);
+                        writer_.setValue(key, i);
                     else
-                        writer_.setValue(key, word); // string
+                    {
+                        // Try to parse to double
+                        double d = strtod(word.c_str(), &pEnd);
+                        if (pEnd[0] == 0)
+                            writer_.setValue(key, d);
+                        else
+                            writer_.setValue(key, word); // string
+                    }
                 }
 
                 key.clear();
@@ -197,7 +205,7 @@ bool Parser::readStream(std::istream& in)
                 new_state = READ_VALUE;
 
             word.clear();
-            num_start_spaces = -1;
+            word_quoted = false;
         }
 
         state = new_state;
