@@ -9,6 +9,8 @@
 namespace configuration
 {
 
+// ----------------------------------------------------------------------------------------------------
+
 char readWhitespace(char c, std::istream& in, int& num_spaces)
 {
     do
@@ -22,6 +24,24 @@ char readWhitespace(char c, std::istream& in, int& num_spaces)
     } while(in.read(&c, 1));
 
     return c;
+}
+
+// ----------------------------------------------------------------------------------------------------
+
+Variant parseVariant(const std::string& str)
+{
+    // Try to parse to integer
+    char* pEnd;
+    int i = strtol(str.c_str(), &pEnd, 10);
+    if (pEnd[0] == 0)
+        return i;
+
+    // Try to parse to double
+    double d = strtod(str.c_str(), &pEnd);
+    if (pEnd[0] == 0)
+        return d;
+
+    return str;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -74,6 +94,8 @@ bool Parser::readStream(std::istream& in)
     int level = 0;
     std::vector<int> levels;
     levels.push_back(level);
+
+    std::string error;
 
     char c;
     while(in.read(&c, 1))
@@ -162,7 +184,7 @@ bool Parser::readStream(std::istream& in)
                         int new_level = levels[num_start_spaces];
                         if (new_level == -1)
                         {
-                            std::cout << "Invalid indent level at line " << line << std::endl;
+                            error = "Invalid indent level";
                         }
                         else
                         {
@@ -181,22 +203,7 @@ bool Parser::readStream(std::istream& in)
                 if (word_quoted)
                     writer_.setValue(key, word); // string
                 else
-                {
-                    // Try to parse to integer
-                    char* pEnd;
-                    int i = strtol(word.c_str(), &pEnd, 10);
-                    if (pEnd[0] == 0)
-                        writer_.setValue(key, i);
-                    else
-                    {
-                        // Try to parse to double
-                        double d = strtod(word.c_str(), &pEnd);
-                        if (pEnd[0] == 0)
-                            writer_.setValue(key, d);
-                        else
-                            writer_.setValue(key, word); // string
-                    }
-                }
+                    writer_.setValue(key, parseVariant(word));
 
                 key.clear();
             }
@@ -209,6 +216,13 @@ bool Parser::readStream(std::istream& in)
         }
 
         state = new_state;
+
+        if (!error.empty())
+        {
+            std::cout << "Error at line " << line << ": " << error << std::endl;
+            return false;
+        }
+
     }
 
     // End open groups
