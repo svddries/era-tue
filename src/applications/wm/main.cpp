@@ -6,6 +6,8 @@
 #include <era-tue/configuration/parser.h>
 #include <era-tue/configuration/reader.h>
 
+#include "localizer.h"
+
 #include <opencv2/highgui/highgui.hpp>
 
 #include <signal.h>
@@ -16,6 +18,8 @@ class KinectViewer : public era::Component
 {
 
 public:
+
+    KinectViewer(Localizer& loc) : localizer_(loc) {}
 
     void initialize(era::InitializationData& init)
     {
@@ -35,7 +39,11 @@ public:
             if (image.depth.data)
                 cv::imshow("depth", image.depth / 8);
 
+            localizer_.check(image);
+
+
             cv::waitKey(3);
+
 
             t_last_ = time;
         }
@@ -45,6 +53,8 @@ private:
 
     era::Port<RGBDImage> p_kinect_;
     era::Time t_last_;
+
+    Localizer& localizer_;
 
 };
 
@@ -81,9 +91,13 @@ int main(int argc, char **argv)
     // Create ERA engine
     era::Engine engine;
 
+    Localizer localizer;
+    configuration::Reader config_reader(config);
+    localizer.configure(config_reader);
+
     // Register kinect and kinect_viewer components
     engine.registerComponent("kinect", new Kinect);
-    engine.registerComponent("kinect_viewer", new KinectViewer);
+    engine.registerComponent("kinect_viewer", new KinectViewer(localizer));
 
     // Run until user interrupts
     while(!finished)
