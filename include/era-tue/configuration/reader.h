@@ -15,14 +15,19 @@ public:
     {
     }
 
-    bool value(const std::string& key, int& value)
+    template<typename T>
+    bool value(const std::string& key, T& value) const
     {
         std::map<std::string, Node>& map = data_.maps[n_current_.idx];
         std::map<std::string, Node>::const_iterator it = map.find(key);
         if (it == map.end())
             return false;
 
-        value = data_.values[it->second.idx];
+        const Variant& v = data_.values[it->second.idx];
+
+        if (!v.getValue(value))
+            return false;
+
         return true;
     }
 

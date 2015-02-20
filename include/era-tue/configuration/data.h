@@ -1,6 +1,8 @@
 #ifndef ERA_TUE_CONFIGURATION_DATA_H_
 #define ERA_TUE_CONFIGURATION_DATA_H_
 
+#include "era-tue/configuration/variant.h"
+
 #include <vector>
 #include <map>
 #include <string>
@@ -38,7 +40,7 @@ struct Data
     std::vector<std::map<std::string, Node> > maps;
     std::vector<unsigned int> map_parents;
 
-    std::vector<int> values;
+    std::vector<Variant> values;
 };
 
 }

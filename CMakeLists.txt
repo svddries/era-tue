@@ -12,9 +12,10 @@ include_directories(
 # ----------------------------------------------------------------------------------------------------
 
 add_library(era_tue_config
+    include/era-tue/configuration/variant.h
     include/era-tue/configuration/data.h
     include/era-tue/configuration/reader.h    
-    include/era-tue/configuration/writer.h
+    include/era-tue/configuration/writer.h    
     include/era-tue/configuration/parser.h
     src/configuration/parser.cpp
     include/era-tue/configuration/emitter.h

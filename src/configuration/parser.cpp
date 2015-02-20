@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <stdlib.h>
 
 namespace configuration
 {
@@ -172,7 +173,21 @@ bool Parser::readStream(std::istream& in)
             }
             else if (state == READ_VALUE)
             {
-                writer_.setValue(key, 0); // TODO
+                // Try to parse to integer
+                char* pEnd;
+                int i = strtol(word.c_str(), &pEnd, 10);
+                if (pEnd[0] == 0)
+                    writer_.setValue(key, i);
+                else
+                {
+                    // Try to parse to double
+                    double d = strtod(word.c_str(), &pEnd);
+                    if (pEnd[0] == 0)
+                        writer_.setValue(key, d);
+                    else
+                        writer_.setValue(key, word); // string
+                }
+
                 key.clear();
             }
 

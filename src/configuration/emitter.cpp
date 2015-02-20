@@ -6,6 +6,21 @@ namespace configuration
 
 // ----------------------------------------------------------------------------------------------------
 
+void emitVariant(const Variant& v, std::ostream& out)
+{
+    if (v.isString())
+    {
+        out << "\"" << v << "\"";
+    }
+    else
+    {
+        out << v;
+    }
+}
+
+// ----------------------------------------------------------------------------------------------------
+
+
 void emitYAML(const Data& data, const std::map<std::string, Node>& map, const std::string& indent, bool put_first_indent, std::ostream& out)
 {
     for(std::map<std::string, Node>::const_iterator it = map.begin(); it != map.end(); ++it)
@@ -17,7 +32,11 @@ void emitYAML(const Data& data, const std::map<std::string, Node>& map, const st
 
         const Node& n = it->second;
         if (n.type == VALUE)
-            out << " " << data.values[n.idx] << std::endl;
+        {
+            out << " ";
+            emitVariant(data.values[n.idx], out);
+            out << std::endl;
+        }
         else if (n.type == MAP)
         {
             out << std::endl;
@@ -55,7 +74,7 @@ void emitJSON(const Data& data, const std::map<std::string, Node>& map, const st
 
         const Node& n = it->second;
         if (n.type == VALUE)
-            out << data.values[n.idx];// << std::endl;
+            emitVariant(data.values[n.idx], out);// << std::endl;
         else if (n.type == MAP)
         {
             emitJSON(data, data.maps[n.idx], new_indent, out);

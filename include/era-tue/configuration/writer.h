@@ -24,7 +24,7 @@ public:
         }
     }
 
-    void setValue(const std::string& key, int value)
+    void setValue(const std::string& key, const Variant& value)
     {
         data_.values.push_back(value);
         data_.maps[n_current_.idx][key] = Node(data_.values.size() - 1, VALUE);
