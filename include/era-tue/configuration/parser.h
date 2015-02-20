@@ -34,8 +34,6 @@ private:
 
     Writer writer_;
 
-    std::vector<unsigned int> levels_;
-
 };
 
 } // end namespace configuration

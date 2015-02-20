@@ -58,15 +58,25 @@ bool Parser::readStream(std::istream& in)
     bool read_quoted = false;
 
     std::string token;
+    std::string key;
 
     State state = READ_KEY;
     int num_start_spaces = 0;
+    int current_num_spaces = 0;
+    int line = 1;
+
+    int level = 0;
+    std::vector<int> levels;
+    levels.push_back(level);
 
     char c;
     while(in.read(&c, 1))
     {
         if (c != '"' && read_quoted)
         {
+            if (c == '\n')
+                ++line;
+
             token += c;
             continue;
         }
@@ -95,6 +105,7 @@ bool Parser::readStream(std::istream& in)
             break;
         case '\n':
             new_state = READ_NEWLINE_WHITESPACE;
+            ++line;
         case ':':
             break;
         case '=':
@@ -107,6 +118,8 @@ bool Parser::readStream(std::istream& in)
             new_state = READ_KEY;
             break;
         case '}':
+            --level;
+            std::cout << "end group (" << level << ")" << std::endl;
             break;
         case ',':
             new_state = READ_KEY;
@@ -118,18 +131,62 @@ bool Parser::readStream(std::istream& in)
 
         if (token_end && ! token.empty())
         {
-            std::cout << token << " ";
-            token.clear();
-
             if (state == READ_KEY)
-                std::cout << "(key, space = " << num_start_spaces << ")";
+            {
+                if (!key.empty())
+                {
+                    ++level;
+                    std::cout << "New group: " << key << " (" << level << ")" << std::endl;
+
+                    if (num_start_spaces >= 0 && num_start_spaces > current_num_spaces)
+                    {
+                        levels.resize(num_start_spaces + 1);
+                        for(unsigned int i = current_num_spaces + 1; i < num_start_spaces; ++i)
+                            levels[i] = -1;
+                        levels[num_start_spaces] = level;
+                    }
+                }
+
+                if (num_start_spaces >= 0)
+                {
+//                    std::cout << num_start_spaces << current_num_spaces << std::endl;
+
+
+
+                    if (num_start_spaces < current_num_spaces)
+                    {
+                        int new_level = levels[num_start_spaces];
+                        if (new_level == -1)
+                        {
+                            std::cout << "Invalid indent level at line " << line << std::endl;
+                        }
+                        else
+                        {
+                            for(; level > new_level; --level)
+                                std::cout << "end group (" << level - 1 << ")" << std::endl;
+                        }
+                    }
+
+
+    //                if (num_start_spaces > current_num_spaces)
+    //                    std::cout << "New group" << std::endl;
+
+                    current_num_spaces = num_start_spaces;
+                }
+
+
+                key = token;
+            }
             else if (state == READ_VALUE)
-                std::cout << "(value)";
-            std::cout << std::endl;
+            {
+                std::cout << "setValue(" << key << ", " << token << ")" << std::endl;
+                key.clear();
+            }
 
             if (state == READ_KEY)
                 new_state = READ_VALUE;
 
+            token.clear();
             num_start_spaces = -1;
         }
 
