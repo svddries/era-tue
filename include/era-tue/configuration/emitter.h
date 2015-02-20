@@ -6,22 +6,13 @@
 namespace configuration
 {
 
-class Emitter
+enum EmitType
 {
-
-public:
-
-    Emitter(Data& data);
-
-    ~Emitter();
-
-    void emit(std::ostream& out);
-
-private:
-
-    Data& data_;
-
+    YAML,
+    JSON
 };
+
+void emit(const Data& data, std::ostream& out, EmitType type = YAML);
 
 } // end namespace configuration
 
