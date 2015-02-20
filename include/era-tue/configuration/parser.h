@@ -28,14 +28,13 @@ private:
     {
         READ_KEY,
         READ_VALUE,
-        READ_COMMENT
+        READ_COMMENT,
+        READ_NEWLINE_WHITESPACE
     };
 
     Writer writer_;
 
-    std::string token_;
-
-    State state_;
+    std::vector<unsigned int> levels_;
 
 };
 

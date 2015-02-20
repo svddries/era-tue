@@ -3,14 +3,27 @@
 #include <fstream>
 #include <iostream>
 
-#include <sstream>
-
 namespace configuration
 {
 
+char readWhitespace(char c, std::istream& in, int& num_spaces)
+{
+    do
+    {
+        if (c == ' ')
+            num_spaces += 1;
+        else if (c == '\t')
+            num_spaces += 4;
+        else
+            return c;
+    } while(in.read(&c, 1));
+
+    return ' '; //  TODO
+}
+
 // ----------------------------------------------------------------------------------------------------
 
-Parser::Parser(Data& data) : writer_(data), state_(READ_KEY)
+Parser::Parser(Data& data) : writer_(data)
 {
 }
 
@@ -42,44 +55,85 @@ bool Parser::readFile(const std::string& filename)
 
 bool Parser::readStream(std::istream& in)
 {
+    bool read_quoted = false;
+
+    std::string token;
+
+    State state = READ_KEY;
+    int num_start_spaces = 0;
+
     char c;
     while(in.read(&c, 1))
     {
-        if (c == '#')
-            state_ = READ_COMMENT;
-        else if (c == '\n')
-            state_ = READ_KEY;
+        if (c != '"' && read_quoted)
+        {
+            token += c;
+            continue;
+        }
 
-        if (state_ == READ_COMMENT)
+        if (c == '#')
+            state = READ_COMMENT;
+
+        if (state == READ_COMMENT)
             continue;
 
-        bool token_end = false;
+        State new_state = state;
+
+        if (state == READ_NEWLINE_WHITESPACE)
+        {
+            num_start_spaces = 0;
+            c = readWhitespace(c, in, num_start_spaces);
+            new_state = READ_KEY;
+        }
+
+        bool token_end = true;
 
         switch(c)
         {
-        case '\n':
-            token_end = true;
+        case '"':
+            read_quoted = !read_quoted;
             break;
+        case '\n':
+            new_state = READ_NEWLINE_WHITESPACE;
         case ':':
-            token_end = true;
+            break;
+        case '=':
             break;
         case ' ':
-            token_end = true;
             break;
         case '\t':
-            token_end = true;
+            break;
+        case '{':
+            new_state = READ_KEY;
+            break;
+        case '}':
+            break;
+        case ',':
+            new_state = READ_KEY;
             break;
         default:
-            token_ += c;
+            token += c;
+            token_end = false;
         }
 
-        if (token_end && ! token_.empty())
+        if (token_end && ! token.empty())
         {
-            std::cout << token_ << std::endl;
-            token_.clear();
+            std::cout << token << " ";
+            token.clear();
+
+            if (state == READ_KEY)
+                std::cout << "(key, space = " << num_start_spaces << ")";
+            else if (state == READ_VALUE)
+                std::cout << "(value)";
+            std::cout << std::endl;
+
+            if (state == READ_KEY)
+                new_state = READ_VALUE;
+
+            num_start_spaces = -1;
         }
 
-//        std::cout << c << ": " << comment_ << std::endl;
+        state = new_state;
     }
 }
 
