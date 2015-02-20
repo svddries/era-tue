@@ -29,6 +29,7 @@ private:
         READ_KEY,
         READ_VALUE,
         READ_COMMENT,
+        READ_ARRAY,
         READ_NEWLINE_WHITESPACE
     };
 

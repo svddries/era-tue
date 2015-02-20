@@ -18,7 +18,7 @@ char readWhitespace(char c, std::istream& in, int& num_spaces)
             return c;
     } while(in.read(&c, 1));
 
-    return ' '; //  TODO
+    return c;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ bool Parser::readStream(std::istream& in)
 {
     bool read_quoted = false;
 
-    std::string token;
+    std::string word;
     std::string key;
 
     State state = READ_KEY;
@@ -65,6 +65,8 @@ bool Parser::readStream(std::istream& in)
     int current_num_spaces = 0;
     int line = 1;
 
+    // 'levels' keeps track of which indent (number of starting spaces) belongs to
+    // which configuration depth: levels[#spaces] -> config level
     int level = 0;
     std::vector<int> levels;
     levels.push_back(level);
@@ -77,7 +79,7 @@ bool Parser::readStream(std::istream& in)
             if (c == '\n')
                 ++line;
 
-            token += c;
+            word += c;
             continue;
         }
 
@@ -119,24 +121,24 @@ bool Parser::readStream(std::istream& in)
             break;
         case '}':
             --level;
-            std::cout << "end group (" << level << ")" << std::endl;
+            writer_.endGroup();
             break;
         case ',':
             new_state = READ_KEY;
             break;
         default:
-            token += c;
+            word += c;
             token_end = false;
         }
 
-        if (token_end && ! token.empty())
+        if (token_end && ! word.empty())
         {
             if (state == READ_KEY)
             {
                 if (!key.empty())
                 {
                     ++level;
-                    std::cout << "New group: " << key << " (" << level << ")" << std::endl;
+                    writer_.writeGroup(key);
 
                     if (num_start_spaces >= 0 && num_start_spaces > current_num_spaces)
                     {
@@ -149,10 +151,6 @@ bool Parser::readStream(std::istream& in)
 
                 if (num_start_spaces >= 0)
                 {
-//                    std::cout << num_start_spaces << current_num_spaces << std::endl;
-
-
-
                     if (num_start_spaces < current_num_spaces)
                     {
                         int new_level = levels[num_start_spaces];
@@ -163,35 +161,36 @@ bool Parser::readStream(std::istream& in)
                         else
                         {
                             for(; level > new_level; --level)
-                                std::cout << "end group (" << level - 1 << ")" << std::endl;
+                                writer_.endGroup();
                         }
                     }
-
-
-    //                if (num_start_spaces > current_num_spaces)
-    //                    std::cout << "New group" << std::endl;
 
                     current_num_spaces = num_start_spaces;
                 }
 
-
-                key = token;
+                key = word;
             }
             else if (state == READ_VALUE)
             {
-                std::cout << "setValue(" << key << ", " << token << ")" << std::endl;
+                writer_.setValue(key, 0); // TODO
                 key.clear();
             }
 
             if (state == READ_KEY)
                 new_state = READ_VALUE;
 
-            token.clear();
+            word.clear();
             num_start_spaces = -1;
         }
 
         state = new_state;
     }
+
+    // End open groups
+    for(; level > 0; --level)
+        writer_.endGroup();
+
+    return true;
 }
 
 // ----------------------------------------------------------------------------------------------------

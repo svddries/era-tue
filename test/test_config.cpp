@@ -1,6 +1,8 @@
 #include <era-tue/configuration/writer.h>
 #include <era-tue/configuration/reader.h>
 #include <era-tue/configuration/parser.h>
+#include <era-tue/configuration/emitter.h>
+
 
 #include <iostream>
 
@@ -24,6 +26,10 @@ int main(int argc, char **argv)
         configuration::Data data;
         configuration::Parser p(data);
         p.readFile(argv[1]);
+
+        configuration::Emitter emitter(data);
+        emitter.emit(std::cout);
+
         return 0;
     }
 
@@ -47,6 +53,13 @@ int main(int argc, char **argv)
     w.endArray();
 
     w.endGroup();
+
+    std::cout << "----------" << std::endl;
+
+    configuration::Emitter emitter(data);
+    emitter.emit(std::cout);
+
+    std::cout << "----------" << std::endl;
 
     // - - - - - - -
 
